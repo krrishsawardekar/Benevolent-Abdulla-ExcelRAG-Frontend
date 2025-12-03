@@ -1,0 +1,252 @@
+const chatContainer = document.getElementById('chat-container');
+const queryForm = document.getElementById('query-form');
+const queryInput = document.getElementById('query-input');
+const sendBtn = document.getElementById('send-btn');
+const welcomeMsg = document.querySelector('.welcome-message');
+
+// Add Clear Button to Header
+const header = document.querySelector('.glass-header');
+const clearBtn = document.createElement('button');
+clearBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px;"><path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 00-6 0v-.113c0-.794.609-1.428 1.364-1.452zm-.355 5.945a.75.75 0 10-1.5.058l.347 9a.75.75 0 101.499-.058l-.346-9zm5.48.058a.75.75 0 10-1.498-.058l-.347 9a.75.75 0 001.5.058l.345-9z" clip-rule="evenodd" /></svg>';
+clearBtn.style.background = 'transparent';
+clearBtn.style.border = '1px solid rgba(255,255,255,0.1)';
+clearBtn.style.color = '#94a3b8';
+clearBtn.style.padding = '8px';
+clearBtn.style.borderRadius = '8px';
+clearBtn.style.cursor = 'pointer';
+clearBtn.style.marginLeft = 'auto';
+clearBtn.style.transition = 'all 0.2s ease';
+clearBtn.title = "Clear Chat History";
+clearBtn.onclick = clearHistory;
+clearBtn.onmouseenter = () => {
+    clearBtn.style.background = 'rgba(239, 68, 68, 0.1)';
+    clearBtn.style.borderColor = '#ef4444';
+    clearBtn.style.color = '#ef4444';
+};
+clearBtn.onmouseleave = () => {
+    clearBtn.style.background = 'transparent';
+    clearBtn.style.borderColor = 'rgba(255,255,255,0.1)';
+    clearBtn.style.color = '#94a3b8';
+};
+header.appendChild(clearBtn);
+
+// Add Re-index Button
+const reindexBtn = document.createElement('button');
+reindexBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px;"><path fill-rule="evenodd" d="M4.755 10.059a7.5 7.5 0 0112.548-3.364l1.903 1.903h-3.183a.75.75 0 100 1.5h4.992a.75.75 0 00.75-.75V4.356a.75.75 0 00-1.5 0v3.18l-1.9-1.9A9 9 0 003.306 9.67a.75.75 0 101.45.388zm15.408 3.352a.75.75 0 00-.919.53 7.5 7.5 0 01-12.548 3.364l-1.902-1.903h3.183a.75.75 0 000-1.5H2.984a.75.75 0 00-.75.75v4.992a.75.75 0 001.5 0v-3.18l1.9 1.9a9 9 0 0015.059-4.035.75.75 0 00-.53-.918z" clip-rule="evenodd" /></svg>';
+reindexBtn.style.background = 'transparent';
+reindexBtn.style.border = '1px solid rgba(255,255,255,0.1)';
+reindexBtn.style.color = '#94a3b8';
+reindexBtn.style.padding = '8px';
+reindexBtn.style.borderRadius = '8px';
+reindexBtn.style.cursor = 'pointer';
+reindexBtn.style.marginLeft = '10px';
+reindexBtn.style.transition = 'all 0.2s ease';
+reindexBtn.title = "Re-index Data (Use after updating Excel)";
+reindexBtn.onclick = reindexData;
+reindexBtn.onmouseenter = () => {
+    reindexBtn.style.background = 'rgba(59, 130, 246, 0.1)';
+    reindexBtn.style.borderColor = '#3b82f6';
+    reindexBtn.style.color = '#3b82f6';
+};
+reindexBtn.onmouseleave = () => {
+    reindexBtn.style.background = 'transparent';
+    reindexBtn.style.borderColor = 'rgba(255,255,255,0.1)';
+    reindexBtn.style.color = '#94a3b8';
+};
+header.appendChild(reindexBtn);
+
+async function reindexData() {
+    if (!confirm("Re-index Excel file? This may take a minute.")) return;
+
+    // Show loading state
+    reindexBtn.style.opacity = '0.5';
+    reindexBtn.disabled = true;
+    addMessage("🔄 Re-indexing data... please wait.", 'system');
+
+    try {
+        const response = await fetch('https://site--benevolent-abdulla-excel-rag-backend--6v4fv7ktwqxj.code.run/reindex', { method: 'POST' });
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            addMessage(`✅ Data updated! Indexed ${data.rows_indexed} rows.`, 'system');
+        } else {
+            addMessage(`❌ Re-indexing failed: ${data.message}`, 'system');
+        }
+    } catch (e) {
+        addMessage(`❌ Error: ${e.message}`, 'system');
+    } finally {
+        reindexBtn.style.opacity = '1';
+        reindexBtn.disabled = false;
+    }
+}
+
+async function loadHistory() {
+    try {
+        const response = await fetch('https://site--benevolent-abdulla-excel-rag-backend--6v4fv7ktwqxj.code.run/history');
+        const history = await response.json();
+
+        if (history.length > 0) {
+            if (welcomeMsg) welcomeMsg.style.display = 'none';
+            history.forEach(msg => {
+                if (msg.role === 'user') addMessage(msg.content, 'user');
+                if (msg.role === 'assistant') addMessage(msg.content, 'system');
+            });
+        }
+    } catch (e) {
+        console.error("Failed to load history", e);
+    }
+}
+
+async function clearHistory() {
+    if (!confirm("Clear chat history?")) return;
+    await fetch('https://site--benevolent-abdulla-excel-rag-backend--6v4fv7ktwqxj.code.run/clear_history', { method: 'POST' });
+    location.reload();
+}
+
+// Load history on start
+loadHistory();
+
+// Auto-resize input (optional, but good for UX)
+// For now, we keep it simple single line
+
+function useSuggestion(text) {
+    queryInput.value = text;
+    queryInput.focus();
+}
+
+function addMessage(text, type) {
+    // Hide welcome message on first interaction
+    if (welcomeMsg && welcomeMsg.style.display !== 'none') {
+        welcomeMsg.style.display = 'none';
+    }
+
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `message ${type}`;
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'content';
+
+    if (type === 'system') {
+        // Enhanced markdown parsing
+        let formattedText = text
+            // Headers (### becomes bold larger text)
+            .replace(/^### (.*?)$/gm, '<div style="font-size: 1.1em; font-weight: 700; margin: 16px 0 8px 0; color: #e2e8f0;">$1</div>')
+            .replace(/^## (.*?)$/gm, '<div style="font-size: 1.2em; font-weight: 700; margin: 18px 0 10px 0; color: #e2e8f0;">$1</div>')
+            .replace(/^# (.*?)$/gm, '<div style="font-size: 1.3em; font-weight: 700; margin: 20px 0 12px 0; color: #e2e8f0;">$1</div>')
+            // Horizontal rules (--- or ***)
+            .replace(/^---$/gm, '<hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 16px 0;">')
+            .replace(/^\*\*\*$/gm, '<hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 16px 0;">')
+            // Bold text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            // Bullet points (- at start of line)
+            .replace(/^- (.*?)$/gm, '<div style="margin-left: 20px; margin-bottom: 4px;">• $1</div>')
+            // Numbered lists (1. at start of line)
+            .replace(/^(\d+)\. (.*?)$/gm, '<div style="margin-left: 20px; margin-bottom: 4px;">$1. $2</div>')
+            // Currency highlighting
+            .replace(/\$([0-9,]+\.?[0-9]*)/g, '<span style="color: #10b981; font-weight: 600;">$$$1</span>')
+            // Percentage highlighting
+            .replace(/([0-9]+\.?[0-9]*%)/g, '<span style="color: #3b82f6; font-weight: 600;">$1</span>')
+            // Newlines (do this last to preserve line structure)
+            .replace(/\n/g, '<br>')
+
+            // Render HTML spans for values (passed from backend)
+            .replace(/&lt;span class="value-positive"&gt;(.*?)&lt;\/span&gt;/g, '<span class="value-positive">$1</span>')
+            .replace(/&lt;span class="value-negative"&gt;(.*?)&lt;\/span&gt;/g, '<span class="value-negative">$1</span>')
+
+
+
+        contentDiv.innerHTML = formattedText;
+    } else {
+        contentDiv.textContent = text;
+    }
+
+    msgDiv.appendChild(contentDiv);
+    chatContainer.appendChild(msgDiv);
+
+    // Smooth scroll to bottom
+    setTimeout(() => {
+        chatContainer.scrollTo({
+            top: chatContainer.scrollHeight,
+            behavior: 'smooth'
+        });
+    }, 10);
+}
+
+
+
+function addLoading() {
+    if (welcomeMsg && welcomeMsg.style.display !== 'none') {
+        welcomeMsg.style.display = 'none';
+    }
+
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'message system loading';
+    msgDiv.id = 'loading-msg';
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'content';
+
+    const dotsDiv = document.createElement('div');
+    dotsDiv.className = 'loading-dots';
+    dotsDiv.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+
+    contentDiv.appendChild(dotsDiv);
+    msgDiv.appendChild(contentDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function removeLoading() {
+    const loadingMsg = document.getElementById('loading-msg');
+    if (loadingMsg) {
+        loadingMsg.remove();
+    }
+}
+
+async function handleSubmit(e) {
+    e.preventDefault();
+
+    const query = queryInput.value.trim();
+    if (!query) return;
+
+    // Disable input
+    queryInput.value = '';
+    queryInput.disabled = true;
+    sendBtn.disabled = true;
+    sendBtn.style.opacity = '0.5';
+
+    // Add user message
+    addMessage(query, 'user');
+    addLoading();
+
+    try {
+        const response = await fetch('https://site--benevolent-abdulla-excel-rag-backend--6v4fv7ktwqxj.code.run/query', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ question: query }),
+        });
+
+        const data = await response.json();
+        removeLoading();
+
+        if (data.answer) {
+            addMessage(data.answer, 'system');
+        } else {
+            addMessage("Sorry, I couldn't get an answer. Please try again.", 'system');
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        removeLoading();
+        addMessage("An error occurred. Please check your connection.", 'system');
+    } finally {
+        // Re-enable input
+        queryInput.disabled = false;
+        sendBtn.disabled = false;
+        sendBtn.style.opacity = '1';
+        queryInput.focus();
+    }
+}
+
+queryForm.addEventListener('submit', handleSubmit);

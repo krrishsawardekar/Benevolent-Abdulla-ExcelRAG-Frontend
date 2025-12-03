@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel RAG Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div class="app-background">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+    </div>
+
+    <div class="main-container">
+        <header class="glass-header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.035-.84-1.875-1.875-1.875h-.75zM9.75 8.625c0-1.035.84-1.875 1.875-1.875h.75c1.035 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 01-1.875-1.875V8.625zM3 13.125c0-1.035.84-1.875 1.875-1.875h.75c1.035 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 013 19.875v-6.75z" />
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>Excel<span>Intelligence</span></h1>
+                    <span class="status-badge">Online</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="chat-interface">
+            <div class="chat-scroll-area" id="chat-container">
+                <div class="welcome-message">
+                    <h2>Unlock Financial Insights</h2>
+                    <p>I've analyzed your Excel data. Ask me anything about revenue, expenses, or forecasts.</p>
+
+                    <div class="suggestion-chips">
+                        <button class="chip" onclick="useSuggestion('Total revenue for Club America 2024?')">
+                            <span>💰</span> Club America Revenue
+                        </button>
+                        <button class="chip" onclick="useSuggestion('What is the EBITDA forecast for Q1 2025?')">
+                            <span>📈</span> EBITDA Forecast
+                        </button>
+                        <button class="chip" onclick="useSuggestion('Show me operating expenses for Athlete One')">
+                            <span>📉</span> Operating Expenses
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-wrapper">
+                <div class="glass-input-bar">
+                    <form id="query-form">
+                        <input type="text" id="query-input" placeholder="Ask a question about your data..."
+                            autocomplete="off">
+                        <button type="submit" id="send-btn" aria-label="Send">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+                <div class="footer-text">Powered by RAG Intelligence • Confidential Data</div>
+            </div>
+        </main>
+    </div>
+    <script src="/static/app.js"></script>
+</body>
+
+</html>
